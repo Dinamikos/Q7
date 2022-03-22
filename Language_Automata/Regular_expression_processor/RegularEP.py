@@ -20,6 +20,8 @@ class RegularExpressionProcessor:
         of the regular expression in the string passed 
         as a parameter.
         '''
+        re.findall(regex, string)
+        
 
         return #TODO Matches index JM guess
 
@@ -94,5 +96,6 @@ class RegularExpressionProcessor:
 
 
 #testing
-engine = RegularExpressionProcessor("Hola como estas")
-engine = engine.process([['delete','Hola']])
+engine = RegularExpressionProcessor("Hola como estas juanaaa@gmail.com osirisaaa@gmail.com victor@gmail.com isaa@gmail.com hola commo estás")
+engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
+##engine.find('/\w+a{3}@gmail\.com/', engine.string)
