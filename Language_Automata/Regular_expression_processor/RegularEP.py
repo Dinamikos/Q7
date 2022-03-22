@@ -83,7 +83,7 @@ class RegularExpressionProcessor:
             if opt == "replace":
                 aux = self.replace(regularEX, aux, regex[2])
             elif opt == "find":
-                aux = self.find(regularEX, aux)
+                return self.find(regularEX, aux)
             elif opt == "delete":
                 aux = self.delete(regularEX, aux)
         
