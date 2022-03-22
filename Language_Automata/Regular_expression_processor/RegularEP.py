@@ -96,3 +96,5 @@ class RegularExpressionProcessor:
 #testing
 engine = RegularExpressionProcessor("Hola como estas")
 engine = engine.process([['delete','Hola']])
+
+string.find("")
