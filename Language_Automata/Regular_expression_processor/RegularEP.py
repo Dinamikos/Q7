@@ -99,3 +99,4 @@ class RegularExpressionProcessor:
 engine = RegularExpressionProcessor("Hola como estas juanaaa@gmail.com osirisaaa@gmail.com victor@gmail.com isaa@gmail.com hola commo estás")
 engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
 ##engine.find('/\w+a{3}@gmail\.com/', engine.string)
+#Osiris hola
