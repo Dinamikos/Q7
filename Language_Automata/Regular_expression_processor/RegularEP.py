@@ -31,6 +31,8 @@ class RegularExpressionProcessor:
         all the matches in the given string and replace 
         those matches with the value string
         '''
+        re.sub(regex, value, string)
+        return #TODO Matches index JM guess
         
         return "new String with regex replaced by value"
 
@@ -100,3 +102,4 @@ engine = RegularExpressionProcessor("Hola como estas juanaaa@gmail.com osirisaaa
 engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
 ##engine.find('/\w+a{3}@gmail\.com/', engine.string)
 #Osiris hola
+engine.replace('/\w+a{3}@gmail\.com/', 'snowball', engine.string)
