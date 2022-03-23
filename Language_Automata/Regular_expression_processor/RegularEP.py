@@ -24,16 +24,14 @@ class RegularExpressionProcessor:
 
         return re.findall(regex, string)
 
-    def replace(self, regex:str, string:str, value:str) -> str:
+    def replaceS(self, regex:str, string:str, value:str) -> str:
         '''
         this method recieves a regular expression, find 
         all the matches in the given string and replace 
         those matches with the value string
         '''
-        re.sub(regex, value, string)
-        return #TODO Matches index JM guess
         
-        return "new String with regex replaced by value"
+        return re.sub(regex, value, string)
 
     def delete(self, regex:str, string:str) -> str:
         '''
@@ -84,7 +82,7 @@ class RegularExpressionProcessor:
             opt = regex[0] #option replace, delete, find
             regularEX = regex[1] # regular expression
             if opt == "replace":
-                aux = self.replace(regularEX, aux, regex[2])
+                aux = self.replaceS(regularEX, aux, regex[2])
             elif opt == "find":
                 return self.find(regularEX, aux)
 
@@ -99,14 +97,7 @@ class RegularExpressionProcessor:
 
 #testing
 engine = RegularExpressionProcessor("Hola como estas juanaaa@gmail.com osirisaaa@gmail.com victor@gmail.com isaa@gmail.com hola commo estás")
-<<<<<<< HEAD
-engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
+#engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
 ##engine.find('/\w+a{3}@gmail\.com/', engine.string)
 #Osiris hola
-engine.replace('/\w+a{3}@gmail\.com/', 'snowball', engine.string)
-=======
-print(engine.process([['find','[\w\.-]+@[\w\.-]+']]))
-
-##engine.find('[\w\.-]+@[\w\.-]+', engine.string)
-#Osiris hola
->>>>>>> 46311c7553d8bbf8f9c9dd01b15cebacb10cc817
+print(engine.replaceS('[\w\.-]+@[\w\.-]+', engine.string, 'snowball'))
