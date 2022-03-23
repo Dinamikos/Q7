@@ -40,7 +40,7 @@ class RegularExpressionProcessor:
         supressed.
         '''
 
-        return "new String with regex deleted"
+        return self.replaceS(regex, string, '')
         
     def _regexValidation(self, data):
         '''
@@ -100,4 +100,4 @@ engine = RegularExpressionProcessor("Hola como estas juanaaa@gmail.com osirisaaa
 #engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
 ##engine.find('/\w+a{3}@gmail\.com/', engine.string)
 #Osiris hola
-print(engine.replaceS('[\w\.-]+@[\w\.-]+', engine.string, 'snowball'))
+print(engine.delete('[\w\.-]+@[\w\.-]+', engine.string))
