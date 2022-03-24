@@ -24,14 +24,14 @@ class RegularExpressionProcessor:
 
         return re.findall(regex, string)
 
-    def replace(self, regex:str, string:str, value:str) -> str:
+    def replaceS(self, regex:str, string:str, value:str) -> str:
         '''
         this method recieves a regular expression, find 
         all the matches in the given string and replace 
         those matches with the value string
         '''
         
-        return "new String with regex replaced by value"
+        return re.sub(regex, value, string)
 
     def delete(self, regex:str, string:str) -> str:
         '''
@@ -40,7 +40,7 @@ class RegularExpressionProcessor:
         supressed.
         '''
 
-        return "new String with regex deleted"
+        return self.replaceS(regex, string, '')
         
     def _regexValidation(self, data):
         '''
@@ -82,7 +82,7 @@ class RegularExpressionProcessor:
             opt = regex[0] #option replace, delete, find
             regularEX = regex[1] # regular expression
             if opt == "replace":
-                aux = self.replace(regularEX, aux, regex[2])
+                aux = self.replaceS(regularEX, aux, regex[2])
             elif opt == "find":
                 return self.find(regularEX, aux)
 
@@ -97,7 +97,7 @@ class RegularExpressionProcessor:
 
 #testing
 engine = RegularExpressionProcessor("Hola como estas juanaaa@gmail.com osirisaaa@gmail.com victor@gmail.com isaa@gmail.com hola commo estás")
-print(engine.process([['find','[\w\.-]+@[\w\.-]+']]))
-
-##engine.find('[\w\.-]+@[\w\.-]+', engine.string)
+#engine = engine.process([['delete','/\w+a{3}@gmail\.com/']])
+##engine.find('/\w+a{3}@gmail\.com/', engine.string)
 #Osiris hola
+print(engine.delete('[\w\.-]+@[\w\.-]+', engine.string))
