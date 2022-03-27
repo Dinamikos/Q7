@@ -48,6 +48,7 @@ void print_mat (int Matrix[n][n], int n){
      printf("\n");
    }
 }
+
 int main(int argc, char**argv){
   int r = 10, c = 10;
   n = 10;
