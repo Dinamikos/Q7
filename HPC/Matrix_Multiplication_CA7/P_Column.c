@@ -4,7 +4,7 @@
 #include <omp.h>
 
 int n;
-
+//Odio git 
 void random_matrix(int Matrix[n][n], int n){
   int i,j;
   srand(time(NULL)); //seed to get random num
