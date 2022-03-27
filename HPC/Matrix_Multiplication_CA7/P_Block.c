@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
  
 void print_mat(int* Matrix1, int r, int c );
 void random_matrix(int* Matrix1, int r, int c);
+void matrix_mult(int* Matrix1, int* Matrix2, int* result_mat, int r, int c, int bsize, int thread_counter);
 
 void random_matrix(int* Matrix, int r, int c){
   int j, i;
@@ -24,7 +26,7 @@ void print_mat(int* Matrix1, int r, int c ){
     } 
 }
 
-void matrix_mult(int* Matrix1, int* Matrix2, int* result_mat, int r, int c, int bsize)
+void matrix_mult(int* Matrix1, int* Matrix2, int* result_mat, int r, int c, int bsize, int thread_counter)
 {
 	int i, j, k, jj, kk;
   double temp;
@@ -38,9 +40,11 @@ void matrix_mult(int* Matrix1, int* Matrix2, int* result_mat, int r, int c, int 
   }
 
   	// Multiplying first Matrix and second Matrix and storing in result_mat.
-    
+
   for(int jj=0;jj<N; jj+= bsize){
+  
     for(int kk=0; kk<N; kk+= bsize){
+      #pragma omp parallel for num_threads(thread_counter) private(temp) shared(result_mat, jj, kk, Matrix1, Matrix2)
       for(int i=0;i<N;i++){
         for(int j = jj; j< ((jj+bsize)>N?N:(jj+bsize)); j++){
           temp = 0;
@@ -60,6 +64,7 @@ int main(int argc, char**argv){
   int* Matrix1 = malloc((r * c) * sizeof(int));
   int* Matrix2 = malloc((r * c) * sizeof(int));
   int* result_mat = malloc((r * c) * sizeof(int));
+  int thread_counter = strtol(argv[1],NULL,10);
 
   random_matrix(Matrix1, r,c);
   random_matrix(Matrix2, r, c);
@@ -70,6 +75,6 @@ int main(int argc, char**argv){
   printf("Matrix 2:\n");
   print_mat(Matrix2, r, c);
   printf("Result:\n");
-  matrix_mult(Matrix1, Matrix2, result_mat, r, c, 2);
+  matrix_mult(Matrix1, Matrix2, result_mat, r, c, 2, thread_counter);
   print_mat(result_mat, r, c); 
 }
