@@ -1,39 +1,16 @@
 #include "mtxutils.h"
+#include "mtxmop.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
 
-void S_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c){
-    int i, j, tn, w, cover;
 
-    for (i = 0; i < r; i++){
-        tn = matrix_T[i * r + 0];
-        w = matrix_A[i * r + i];
-        cover = tn;
-
-        //printf("%d\n", tn);
-
-        for (j = 0; j < r; j++){
-            if (i != j){
-                cover -= (float)matrix_A[i * r + j] * matrix_R[j * r + 0];
-            } else {
-                break;
-            } 
-        }
-
-        matrix_R[i * r + 0] = (float)cover/w;
-        
-    }
-    
-}
-
-
-int main(){
+void main(){
     int r = 3, c = 3;
     int* matrixA = malloc((r * c) * sizeof(int));
-    int* matrixT = malloc((r * 1) * sizeof(int));
-    float* matrixR = malloc((r * 1) * sizeof(float));
+    int* matrixT = malloc(r * sizeof(int));
+    float* matrixR = malloc(r * sizeof(float));
 
     // matrixA manual asignation
     matrixA[0 * r + 0] = 1;
@@ -49,15 +26,31 @@ int main(){
     matrixA[2 * r + 2] = 5;
 
     // matrixT manual asignation
-    matrixT[0 * r + 0] = 2;
-    matrixT[1 * r + 0] = -2;
-    matrixT[2 * r + 0] = 10;
+    matrixT[0] = 2;
+    matrixT[1] = -2;
+    matrixT[2] = 10;
 
     // matrixR one
-    oneFMatrix(matrixR, r, 1);
+    //oneFMatrix(matrixR, r, 1);
 
-    S_triangularVMM(matrixA, matrixT, matrixR, r, c);
+    P_triangularVMM(matrixA, matrixT, matrixR, r, c, 2);
     printFMatrix(matrixR, r, 1);
 
-    return 1;
 }
+
+    /*
+int Emain(){
+    int r = 4, c = 4;
+    int* matrixA = malloc((r * c) * sizeof(int));
+    int* matrixB = malloc((r * c) * sizeof(int));
+    int* matrixC = malloc((r * c) * sizeof(int));
+    readMatrixF("matrix2.txt", matrixA, r, c);
+    readMatrixF("matrix1.txt", matrixB, r, c);
+    randMatrix(matrixA, r, c);
+
+    P_blockMM(matrixA, matrixB, matrixC, r, c, 2, 2);
+    writeMatrixF("matrix3.txt", matrixC, r, c);
+    //readMatrixF("matrix1.txt", matrixA, r, c);
+    //printMatrix(matrixA, r, c);
+}
+    */

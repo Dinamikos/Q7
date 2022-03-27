@@ -26,7 +26,7 @@ void oneMatrix(int* matrix, int r, int c);
 void zeroFMatrix(float* matrix, int r, int c);
 void oneFMatrix(float* matrix, int r, int c);
 
-void random_matrix(int* matrix, int r, int c){
+void randMatrix(int* matrix, int r, int c){
     int j, i;
     srand(time(NULL));
     /* Putting 1 to 12 in the 1D array in a sequence */
@@ -42,7 +42,7 @@ void printMatrix(int* matrix, int r, int c){
     for (int i = 0; i < r; i++) {
         // access in columns
         for (int j = 0; j < c; j++)
-            printf("%d\t", matrix[i * r + j]);
+            printf("%d ", matrix[i * r + j]);
         // jump
         printf("\n");
     } 
@@ -53,7 +53,7 @@ void printFMatrix(float* matrix, int r, int c){
     for (int i = 0; i < r; i++) {
         // access in columns
         for (int j = 0; j < c; j++)
-            printf("%.2f\t", matrix[i * r + j]);
+            printf("%.2f ", matrix[i * c + j]);
         // jump
         printf("\n");
     }
@@ -102,7 +102,7 @@ void writeMatrixF(char* name, int* matrix, int r, int c){
 void zeroMatrix(int* matrix, int r, int c){
     for (int i = 0; i < r; i++){
         for (int j=0; j< c; j++){
-            matrix[i * r + j] = 0;
+            matrix[i * c + j] = 0;
         }
     }
 }
@@ -110,7 +110,7 @@ void zeroMatrix(int* matrix, int r, int c){
 void oneMatrix(int* matrix, int r, int c){
     for (int i = 0; i < r; i++){
         for (int j=0; j< c; j++){
-            matrix[i * r + j] = 1;
+            matrix[i * c + j] = 1;
         }
     }
 }
@@ -118,15 +118,16 @@ void oneMatrix(int* matrix, int r, int c){
 void zeroFMatrix(float* matrix, int r, int c){
     for (int i = 0; i < r; i++){
         for (int j=0; j< c; j++){
-            matrix[i * r + j] = 0.0;
+            matrix[i * c + j] = 0.0;
         }
     }
 }
 
 void oneFMatrix(float* matrix, int r, int c){
-    for (int i = 0; i < r; i++){
-        for (int j=0; j< c; j++){
-            matrix[i * r + j] = 1.0;
+    int i, j;
+    for (i = 0; i < r; i++){
+        for (j=0; j< c; j++){
+            matrix[i * c + j] = 1.0;
         }
     }
 }

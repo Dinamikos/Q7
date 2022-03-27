@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
-#include "mtxutils.h"
 
 /*
 This is a lib with different applications for matrix multiplication
@@ -77,12 +76,12 @@ void P_blockMM(int* matrix_A, int* matrix_B, int* matrix_C, int r, int c, int bs
     for(jj = 0;jj < N; jj += bsize){
   
         for(kk = 0;kk < N; kk += bsize){
-            #pragma omp parallel for num_threads(thread_counter) private(temp) shared(matrix_C, jj, kk, matrix_A, matrix_C)
+            #pragma omp parallel for num_threads(thread_counter) private(j,k,temp) shared(matrix_C, jj, kk, matrix_A, matrix_C)
             for(i = 0 ;i < N; i++){
                 for(j = jj; j < ((jj+bsize)>N ? N:(jj+bsize)); j++){
                     temp = 0;
                     for(k = kk; k < ((kk+bsize)>N ? N:(kk+bsize)); k++){ //[i * N + k] [k * N +j]
-                        temp += matrix_A[i * N + k] * matrix_C[k * N + j];
+                        temp += matrix_A[i * N + k] * matrix_B[k * N + j];
                     }
                     matrix_C[i * N + j] += temp;
                 }
@@ -94,11 +93,11 @@ void P_blockMM(int* matrix_A, int* matrix_B, int* matrix_C, int r, int c, int bs
 void S_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c){
     int i, j, tn, w, cover;
 
-    //set in zero
-    zeroFMatrix(matrix_R, r, 1);
+    //set in one
+    oneFMatrix(matrix_R, r, 1);
 
     for (i = 0; i < r; i++){
-        tn = matrix_T[i * r + 0];
+        tn = matrix_T[i];
         w = matrix_A[i * r + i];
         cover = tn;
 
@@ -106,24 +105,23 @@ void S_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c
 
         for (j = 0; j < r; j++){
             if (i != j){
-                cover -= (float)matrix_A[i * r + j] * matrix_R[j * r + 0];
+                cover -= (float)matrix_A[i * r + j] * matrix_R[j];
             } else {
                 break;
             } 
         }
-        matrix_R[i * r + 0] = (float)cover/w;
+        matrix_R[i] = (float)cover/w;
     }
 }
 
 void P_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter){
     int i, j, tn, w, cover;
 
-    //set in zero
-    zeroFMatrix(matrix_R, r, 1);
-    
+    //set in one
+    oneFMatrix(matrix_R, r, 1);
     #pragma omp parallel for num_threads(thread_counter) private(tn, w, cover, j) shared(matrix_A, matrix_R, matrix_T)
     for (i = 0; i < r; i++){
-        tn = matrix_T[i * r + 0];
+        tn = matrix_T[i];
         w = matrix_A[i * r + i];
         cover = tn;
 
@@ -131,11 +129,11 @@ void P_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c
 
         for (j = 0; j < r; j++){
             if (i != j){
-                cover -= (float)matrix_A[i * r + j] * matrix_R[j * r + 0];
+                cover -= (float)matrix_A[i * r + j] * matrix_R[j];
             } else {
                 break;
             } 
         }
-        matrix_R[i * r + 0] = (float)cover/w;
+        matrix_R[i] = (float)cover/w;
     }
 }
