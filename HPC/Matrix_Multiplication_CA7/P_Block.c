@@ -38,15 +38,16 @@ void matrix_mult(int* Matrix1, int* Matrix2, int* result_mat, int r, int c, int 
   }
 
   	// Multiplying first Matrix and second Matrix and storing in result_mat.
-  for(int kk=0;kk<N; kk+= bsize){
-    for(int jj=0; jj<N; jj+= bsize){
+    
+  for(int jj=0;jj<N; jj+= bsize){
+    for(int kk=0; kk<N; kk+= bsize){
       for(int i=0;i<N;i++){
-        for(int j = jj; j< (jj+bsize); j++){
+        for(int j = jj; j< ((jj+bsize)>N?N:(jj+bsize)); j++){
           temp = 0;
-          for(int k = kk; k< (kk+bsize); k++){ //[i * N + k] [k * N +j]
-            temp += Matrix1[i * (kk+bsize) + k]* Matrix2[k * (kk+bsize) +j];
+          for(int k = kk; k< ((kk+bsize)>N?N:(kk+bsize)); k++){ //[i * N + k] [k * N +j]
+            temp += Matrix1[i * N + k]* Matrix2[k * N +j];
           }
-          result_mat[i * N + j] = temp;
+          result_mat[i * N + j] += temp;
         }
       }
     }
@@ -55,7 +56,7 @@ void matrix_mult(int* Matrix1, int* Matrix2, int* result_mat, int r, int c, int 
 }
 
 int main(int argc, char**argv){
-  int r = 8, c = 8;
+  int r = 10, c = 10;
   int* Matrix1 = malloc((r * c) * sizeof(int));
   int* Matrix2 = malloc((r * c) * sizeof(int));
   int* result_mat = malloc((r * c) * sizeof(int));
@@ -69,6 +70,6 @@ int main(int argc, char**argv){
   printf("Matrix 2:\n");
   print_mat(Matrix2, r, c);
   printf("Result:\n");
-  matrix_mult(Matrix1, Matrix2, result_mat, r, c, 4);
+  matrix_mult(Matrix1, Matrix2, result_mat, r, c, 2);
   print_mat(result_mat, r, c); 
 }
