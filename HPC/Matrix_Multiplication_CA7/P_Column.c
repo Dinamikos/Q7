@@ -22,7 +22,7 @@ void matrix_mult(int Matrix1[n][n], int Matrix2[n][n], int result_mat[n][n], int
 	for(i = 0; i < n; ++i)	{
 		for(j = 0; j < n; ++j){
 			for(k=0; k<n; ++k){
-				result_mat[i][j] += Matrix1[i][k] * Matrix2[k][j];
+				result_mat[j][i] += Matrix1[j][k] * Matrix2[k][i];
 			}
 		}
 	}
