@@ -17,12 +17,12 @@ while you are programming matrix operations.
 
 void randMatrix(int* matrix, int r, int c);
 void printMatrix(int* matrix, int r, int c);
+void printFMatrix(float* matrix, int r, int c);
 
 void readMatrixF(char* path, int* matrix, int r, int c);
 void writeMatrixF(char* path, int* matrix, int r, int c);
 void zeroMatrix(int* matrix, int r, int c);
 void oneMatrix(int* matrix, int r, int c);
-
 
 
 void random_matrix(int* matrix, int r, int c){
@@ -41,10 +41,21 @@ void printMatrix(int* matrix, int r, int c){
     for (int i = 0; i < r; i++) {
         // access in columns
         for (int j = 0; j < c; j++)
-            printf("%d ", matrix[i * c + j]);
+            printf("%d ", matrix[i * r + j]);
         // jump
         printf("\n");
     } 
+}
+
+void printFMatrix(float* matrix, int r, int c){
+    // access in row
+    for (int i = 0; i < r; i++) {
+        // access in columns
+        for (int j = 0; j < c; j++)
+            printf("%f ", matrix[i * r + j]);
+        // jump
+        printf("\n");
+    }
 }
 
 void readMatrixF(char* name, int* matrix, int r, int c){
@@ -63,7 +74,7 @@ void readMatrixF(char* name, int* matrix, int r, int c){
     for (i = 0; i < r; i++){
         for (j = 0; j < c; j++){
             fscanf(fptr, "%d ", &data);
-            matrix[i * c + j] = data;
+            matrix[i * r + j] = data;
         }
         fscanf(fptr, "\n", NULL);
     }
@@ -79,7 +90,7 @@ void writeMatrixF(char* name, int* matrix, int r, int c){
 
     for (i = 0; i < r; i++){
         for (j = 0; j < c; j++){
-            fprintf(fptr, "%d ", matrix[i * c + j]);
+            fprintf(fptr, "%d ", matrix[i * r + j]);
         }
         fprintf(fptr, "\n", NULL);
     }
@@ -90,7 +101,7 @@ void writeMatrixF(char* name, int* matrix, int r, int c){
 void zeroMatrix(int* matrix, int r, int c){
     for (int i = 0; i < r; i++){
         for (int j=0; j< c; j++){
-            matrix[i * c + j] = 0;
+            matrix[i * r + j] = 0;
         }
     }
 }
@@ -98,7 +109,7 @@ void zeroMatrix(int* matrix, int r, int c){
 void oneMatrix(int* matrix, int r, int c){
     for (int i = 0; i < r; i++){
         for (int j=0; j< c; j++){
-            matrix[i * c + j] = 1;
+            matrix[i * r + j] = 1;
         }
     }
 }

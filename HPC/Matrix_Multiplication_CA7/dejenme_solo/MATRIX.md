@@ -48,3 +48,5 @@ mtxmop.h contains the following functions:
 - P_blockMM(): Parallel block based Matrix Multiplication
 - S_TriangularVMM(): Sequential Triangular Vertex Matrix Multiplication
 - P_TriangularVMM(): Parallel Triangular Vertex Matrix Multiplication
+
+- [ ] check if he size for matrix are correct
