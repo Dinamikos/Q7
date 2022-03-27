@@ -45,12 +45,44 @@ void printMatrix(int* matrix, int r, int c){
     } 
 }
 
-void readMatrixF(char* path, int* matrix, int r, int c){
+void readMatrixF(char* name, int* matrix, int r, int c){
+    /*
+    Given a matrix row as 0 0 0 0 0\n
+    */
+    FILE * fptr;
+    int i, j, data;
+    
+    fptr = fopen(name, "r");
+    if(fptr == NULL){
+        printf("Error!, that file does not exists in the current path\n");
+        exit(1);
+    }
 
+    for (i = 0; i < r; i++){
+        for (j = 0; j < c; j++){
+            fscanf(fptr, "%d ", &data);
+            matrix[i * c + j] = data;
+        }
+        fscanf(fptr, "\n", NULL);
+    }
+
+    fclose(fptr);
 }
 
-void writeMatrixF(char* path, int* matrix, int r, int c){
+void writeMatrixF(char* name, int* matrix, int r, int c){
+    FILE* fptr;
+    int i, j;
 
+    fptr = fopen(name, "w");
+
+    for (i = 0; i < r; i++){
+        for (j = 0; j < c; j++){
+            fprintf(fptr, "%d ", matrix[i * c + j]);
+        }
+        fprintf(fptr, "\n", NULL);
+    }
+    
+    fclose(fptr);
 }
 
 void zeroMatrix(int* matrix, int r, int c){
