@@ -11,6 +11,7 @@ while you are programming matrix operations.
     - write matrix > file
     - print matix
     - set zero matrix
+    - set one matrix
 */
 
 
@@ -20,6 +21,7 @@ void printMatrix(int* matrix, int r, int c);
 void readMatrixF(char* path, int* matrix, int r, int c);
 void writeMatrixF(char* path, int* matrix, int r, int c);
 void zeroMatrix(int* matrix, int r, int c);
+void oneMatrix(int* matrix, int r, int c);
 
 
 
@@ -81,10 +83,22 @@ void writeMatrixF(char* name, int* matrix, int r, int c){
         }
         fprintf(fptr, "\n", NULL);
     }
-    
+
     fclose(fptr);
 }
 
 void zeroMatrix(int* matrix, int r, int c){
+    for (int i = 0; i < r; i++){
+        for (int j=0; j< c; j++){
+            matrix[i * c + j] = 0;
+        }
+    }
+}
 
+void oneMatrix(int* matrix, int r, int c){
+    for (int i = 0; i < r; i++){
+        for (int j=0; j< c; j++){
+            matrix[i * c + j] = 1;
+        }
+    }
 }
