@@ -50,8 +50,12 @@ void print_mat (int Matrix[n][n], int n){
 }
 
 int main(int argc, char**argv){
-  int r = 10, c = 10;
-  n = 10;
+  //printf("Part sequential\n");
+  //double timeSpent = 0.0;
+  //clock_t begin = clock();
+
+  int r = 100, c = 100;
+  n = 100;
   int Matrix2[n][n];
   int Matrix1[n][n];
   int result_mat[n][n];
@@ -59,6 +63,10 @@ int main(int argc, char**argv){
 
   random_matrix(Matrix1,n);
   random_matrix(Matrix2, n);
+
+  //clock_t end = clock();
+  //timeSpent += (double)(end - begin) / CLOCKS_PER_SEC;
+  //printf("Running time: %f seconds \n", timeSpent);
   //random_matrix(result_mat, r, c);
 
   printf("Matrix 1:\n");
@@ -66,6 +74,20 @@ int main(int argc, char**argv){
   printf("Matrix 2:\n");
   print_mat(Matrix2, n);
   printf("Result:\n");
+
   matrix_mult(Matrix1, Matrix2, result_mat, n, thread_counter);
+
+  //printf("Part parallel\n");
+  /*for (int i = 1; i < 9; i++){
+
+      timeSpent = 0.0;
+      begin = clock();
+      matrix_mult(Matrix1, Matrix2, result_mat, n, i);
+
+      end = clock();
+      timeSpent += (double)(end - begin) / CLOCKS_PER_SEC;
+      printf("Running time: %f seconds for %d threads\n", timeSpent, i);
+  }*/
+
   print_mat(result_mat, n); 
 }
