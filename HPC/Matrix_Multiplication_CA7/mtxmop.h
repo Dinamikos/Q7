@@ -17,6 +17,8 @@ void P_blockMM(int* matrix_A, int* matrix_B, int* matrix_C, int r, int c, int bs
 
 void S_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c);
 void P_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter);
+void P_triangularVMMS(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter);
+void P_triangularVMMD(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter);
 
 
 
@@ -127,6 +129,61 @@ void P_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c
     oneFMatrix(matrix_R, r, 1);
     //printVectorFloatMatrix(matrix_R, r);
     #pragma omp parallel for num_threads(thread_counter) private(tn, w, cover, j) shared(matrix_A, matrix_R, matrix_T)
+
+    for (i = 0; i < r; i++){
+        tn = matrix_T[i];
+        w = matrix_A[i * r + i];
+        cover = tn;
+
+        //printf("%d\n", tn);
+
+        for (j = 0; j < r; j++){
+            if (i != j){
+                cover = cover - ((float)matrix_A[i * r + j] * matrix_R[j]);
+            } else {
+                break;
+            } 
+        }
+        matrix_R[i] = (float)cover/w;
+    }
+}
+
+
+void P_triangularVMMS(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter){
+    int i, j, tn, w;
+    float cover;
+
+    //set in one
+    oneFMatrix(matrix_R, r, 1);
+    //printVectorFloatMatrix(matrix_R, r);
+    #pragma omp parallel for schedule(static) num_threads(thread_counter) private(tn, w, cover, j) shared(matrix_A, matrix_R, matrix_T)
+
+    for (i = 0; i < r; i++){
+        tn = matrix_T[i];
+        w = matrix_A[i * r + i];
+        cover = tn;
+
+        //printf("%d\n", tn);
+
+        for (j = 0; j < r; j++){
+            if (i != j){
+                cover = cover - ((float)matrix_A[i * r + j] * matrix_R[j]);
+            } else {
+                break;
+            } 
+        }
+        matrix_R[i] = (float)cover/w;
+    }
+}
+
+void P_triangularVMMD(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter){
+    int i, j, tn, w;
+    float cover;
+
+    //set in one
+    oneFMatrix(matrix_R, r, 1);
+    //printVectorFloatMatrix(matrix_R, r);
+    #pragma omp parallel for schedule(dynamic) num_threads(thread_counter) private(tn, w, cover, j) shared(matrix_A, matrix_R, matrix_T)
 
     for (i = 0; i < r; i++){
         tn = matrix_T[i];

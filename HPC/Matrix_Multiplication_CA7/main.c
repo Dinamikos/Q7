@@ -84,23 +84,24 @@ void main(int argc, char** argv){
     int thread_counter = strtol(argv[1],NULL,10);
 
     //Sequencial
-    timeSpent_s = 0.0;
     begin_s = clock();
+
     S_triangularVMM(matrixA, matrixB, matrixC, r, c);
     end_s = clock();
-    timeSpent_s += (double)(end_s - begin_s) / CLOCKS_PER_SEC;
+    timeSpent_s = (double)(end_s - begin_s) / CLOCKS_PER_SEC;
+    printf("\nSpeeduawdap: %f\n", timeSpent_s);
     //printVectorFloatMatrix(matrixC, r);
     //writeMatrixF("hola",matrixC, r,1);
     //Parallel
     timeSpent_p = 0.0;
     begin_p = clock();
-    P_triangularVMM(matrixA, matrixB, matrixC, r, c, thread_counter);
+    P_triangularVMMS(matrixA, matrixB, matrixC, r, c, thread_counter);
     end_p = clock();
     timeSpent_p += (double)(end_p - begin_p) / CLOCKS_PER_SEC;
 
     //print_mat(result_mat, r, c); 
     speedup= timeSpent_s/ timeSpent_p;
-    //printf("Running time: %f seconds with %d threads\n", timeSpent_p, thread_counter);
+    printf("Running time: %f seconds with %d threads\n", timeSpent_p, thread_counter);
     printf("\nSpeedup: %f\n", speedup);
 }
 
