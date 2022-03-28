@@ -29,7 +29,7 @@ void S_orgMM(int* matrix_A, int* matrix_B, int* matrix_C, int r, int c){
 	for(i = 0; i < r; ++i)	{
 		for(j = 0; j < c; ++j){
 			for(k=0; k<r; ++k){
-				matrix_C[i * r + j] += matrix_A[i * r + k] * matrix_B[k * r + j];
+				matrix_C[i * c + j] += matrix_A[i * c + k] * matrix_B[k * c + j];
 			}
 		}
 	}
@@ -91,35 +91,43 @@ void P_blockMM(int* matrix_A, int* matrix_B, int* matrix_C, int r, int c, int bs
 }
 
 void S_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c){
-    int i, j, tn, w, cover;
+    int i, j, tn, w;
+    float cover;
 
     //set in one
     oneFMatrix(matrix_R, r, 1);
 
+    //printVectorFloatMatrix(matrix_R, r);
+
     for (i = 0; i < r; i++){
         tn = matrix_T[i];
+        
         w = matrix_A[i * r + i];
         cover = tn;
 
-        //printf("%d\n", tn);
 
         for (j = 0; j < r; j++){
             if (i != j){
-                cover -= (float)matrix_A[i * r + j] * matrix_R[j];
+                cover =  cover - (float)matrix_A[i * c + j] * matrix_R[j];
+                //printf("%f\n", (float)matrix_A[i * c + j] * matrix_R[j]);
             } else {
                 break;
             } 
         }
+        //printf("%f\n", cover);
         matrix_R[i] = (float)cover/w;
     }
 }
 
 void P_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c, int thread_counter){
-    int i, j, tn, w, cover;
+    int i, j, tn, w;
+    float cover;
 
     //set in one
     oneFMatrix(matrix_R, r, 1);
+    //printVectorFloatMatrix(matrix_R, r);
     #pragma omp parallel for num_threads(thread_counter) private(tn, w, cover, j) shared(matrix_A, matrix_R, matrix_T)
+
     for (i = 0; i < r; i++){
         tn = matrix_T[i];
         w = matrix_A[i * r + i];
@@ -129,7 +137,7 @@ void P_triangularVMM(int* matrix_A, int* matrix_T, float* matrix_R, int r, int c
 
         for (j = 0; j < r; j++){
             if (i != j){
-                cover -= (float)matrix_A[i * r + j] * matrix_R[j];
+                cover = cover - ((float)matrix_A[i * r + j] * matrix_R[j]);
             } else {
                 break;
             } 

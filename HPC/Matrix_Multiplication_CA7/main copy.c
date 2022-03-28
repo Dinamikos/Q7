@@ -60,18 +60,13 @@ void main(int argc, char** argv){
   //
     int r = 100, c = 100;
     int* matrixA = malloc((r * c) * sizeof(int));
-    int* matrixB = malloc(r * sizeof(int));
-    float* matrixC = malloc(r * sizeof(float));
-    //randMatrix(matrixA,r,c);
-    //writeMatrixF("newT.txt",matrixA,r,1);
-    readMatrixF("new.txt", matrixA,r,c);
-    readVectorMatrixF("newT.txt", matrixB,r);
-    //printVectorMatrix(matrixB, r);
-    //printMatrix(matrixB, r, c);
+    int* matrixB = malloc((r * c) * sizeof(int));
+    int* matrixC = malloc((r * c) * sizeof(int));
+    readMatrixF("matrix1.txt", matrixA,r,c);
+    readMatrixF("matrix1.txt", matrixB,r,c);
     //randMatrix(matrixA, r, c);
     //writeMatrixF("matrix2.txt", matrixA, r, 1);
-    //S_triangularVMM(matrixA, matrixB, matrixC, r, c);
-    //printVectorFloatMatrix(matrixC, r);
+
     //random_matrix(Matrix1, r,c);
     //random_matrix(Matrix2, r, c);
     //random_matrix(result_mat, r, c);
@@ -81,20 +76,20 @@ void main(int argc, char** argv){
     //printf("Matrix 2:\n");
     //print_mat(Matrix2, r, c);
     //printf("Result:\n");
+
     int thread_counter = strtol(argv[1],NULL,10);
 
     //Sequencial
     timeSpent_s = 0.0;
     begin_s = clock();
-    S_triangularVMM(matrixA, matrixB, matrixC, r, c);
+    S_orgMM(matrixA, matrixB, matrixC, r, c);
     end_s = clock();
     timeSpent_s += (double)(end_s - begin_s) / CLOCKS_PER_SEC;
-    //printVectorFloatMatrix(matrixC, r);
-    //writeMatrixF("hola",matrixC, r,1);
+
     //Parallel
     timeSpent_p = 0.0;
     begin_p = clock();
-    P_triangularVMM(matrixA, matrixB, matrixC, r, c, thread_counter);
+    P_rowMM(matrixA, matrixB, matrixC, r, c, thread_counter);
     end_p = clock();
     timeSpent_p += (double)(end_p - begin_p) / CLOCKS_PER_SEC;
 
@@ -107,14 +102,6 @@ void main(int argc, char** argv){
 
 
     /*
-
-
-
-
-
-
-
-
 
 #include "mtxutils.h"
 #include "mtxmop.h"
