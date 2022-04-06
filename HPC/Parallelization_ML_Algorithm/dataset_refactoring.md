@@ -1,4 +1,4 @@
-# instructions to refactor the dataset
+# Instructions to refactor the dataset
 
 1. read the dataset you can use pandas df.read_csv()
 
