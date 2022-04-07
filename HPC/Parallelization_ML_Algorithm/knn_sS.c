@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 void readDatasetFromFile(char * path, int n, int dataset[n][3]);
 double eucledianDistance(int x1, int y1, int x2, int y2);
@@ -11,10 +12,23 @@ void predict(int new_data[2], int k, int nearest_neighbors[k]);
 
 
 int main(void){
+    //Time
+    double timeSpent_s, timeSpent_p, time_total, speedup;
+    clock_t begin_s, begin_p;
+    clock_t end_s, end_p;
+    //
+
+
     int n = 11;
     int dataset[n][3];
     double dataset_x[n];
     int k = 5;
+
+
+    timeSpent_s = 0.0;
+    begin_s = clock();
+
+
     readDatasetFromFile("dataset.txt", n, dataset);
     //cleaning two last columns in dataset
     for(int i = 0; i < n; i++){
@@ -41,6 +55,10 @@ int main(void){
 
     //predicting the new data
     predict(new_data, k, nearest_neighbors);
+
+    end_s = clock();
+    timeSpent_s += (double)(end_s - begin_s) / CLOCKS_PER_SEC;
+    printf("\nSequential Time: %f\n", timeSpent_s);
 
 }
 
