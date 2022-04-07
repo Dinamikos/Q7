@@ -144,71 +144,57 @@ class pushdown_automaton:
         self.count = 0
 
     def grammar_processor(self, word):
-        '''Auxiliar function to processing_word function'''
-        if len(word) == 0:
-            if self.current_state in self.f and self.lastpop == '$':
-                self.is_accepted = True
-                self.true_transitions = self.transitions.copy()
+
+        if len(word) == 0 and len(self.queue) == 0 and self.current_state in self.f:
+            print('accepted with {0}'.format(self.current_state))
+            self.is_accepted = True
+            self.true_transitions = self.transitions.copy()
             return
 
         else:
-            #normal transitions
-            transitions = self.process_symbol(self.current_state, word[0])
-            #empty transitions
-            empty_transitions = self.empty_transition(self.current_state)
+            current_transitions = []
+            current_empty_transitions = []
+            try:
+                current_transitions = self.process_symbol(self.current_state, word[0])
+                current_empty_transitions = self.empty_transition(self.current_state)
+            except:
+                return
 
-            transitions = transitions + empty_transitions
+            transitions = current_transitions + current_empty_transitions
 
             for transition in transitions:
                 q, symbol, outo, next, into = self.get_transition_components(transition)
+                print('transition {0}'.format(transition))
                 self.transitions.append(transition)
+                self.pop_queue(outo)
+                self.put_queue(into)
                 self.current_state = next
-                if self.pop_from_queue(outo):
-                    self.put_in_queue(into)
-                else:
-                    if len(self.transitions)>0:
-                        self.transitions.pop()
-                    self.current_state = q
-                    pass
-
                 if self.count == 0:
-                    new_word = word
                     self.count += 1
+                    self.grammar_processor(word)
                 else:
-                    new_word = word[1:]
-                self.grammar_processor(new_word)
-
-                self.current_state = q
-                if len(self.queue) > 0:
-                    self.queue.pop()
-                
-                if len(self.transitions)>0:
+                    self.grammar_processor(word[1:])
+                    
+                    self.pop_queue(into)
+                    self.current_state = q
                     self.transitions.pop()
+                
 
 
-    def put_in_queue(self, symbol):
+    def pop_queue(self, symbol):
         '''
-        this method receives a symbol and puts it in the queue
+        this method pops the queue
         '''
-        if symbol == self.empty:
-            return
-        else:
+        print('pop symbol {0} from {1}'.format(symbol, self.queue))
+        if symbol != self.empty and len(self.queue) > 0 and symbol == self.queue[-1]:
+            self.queue.pop()
+    
+    def put_queue(self, symbol):
+        '''
+        this method puts the symbol in the queue
+        '''
+        if symbol != self.empty:
             self.queue.append(symbol)
-            
-    def pop_from_queue(self, symbol):
-        '''
-        this method pops the last element from the queue
-        '''
-        print('pop {0} from {1} '.format(symbol, self.queue))
-        if symbol == self.empty:
-            return
-        elif len(self.queue) > 0:
-            if self.queue[-1] == symbol:
-                self.lastpop = self.queue.pop()
-                return True
-        else:
-            return False
-
 
     def is_valid(self, q, sigma, gamma, delta, q0, f):
         '''
@@ -280,5 +266,5 @@ automaton.load_from_file('automaton2.txt')
 # print('\n' )
 # print(automaton.process_symbol('q2', '0'))
 
-print(automaton.process_word('0110'))
+print(automaton.process_word('01101'))
     
