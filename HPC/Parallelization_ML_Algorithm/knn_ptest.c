@@ -11,6 +11,7 @@ double eucledianDistance(int x1, int y1, int x2, int y2);
 int main(){
     int rank, size, n, k;
     int new_data[3];
+    int hola[5];
 
 
     MPI_Init(NULL, NULL);
@@ -18,11 +19,16 @@ int main(){
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if (rank == 0){
-        int hola[5] = {1,2,3,4,5};
+        hola[0] = 1;
+        hola[1] = 1;
+        hola[2] = 2;
+        hola[3] = 3;
+        hola[4] = 4;
         MPI_Bcast(hola, 5, MPI_INT, 0, MPI_COMM_WORLD);
 
     } else {
-        printf("%d\n", hola[0]);
+        MPI_Bcast(hola, 5, MPI_INT, 0, MPI_COMM_WORLD);
+        printf("%d\n", hola[rank]);
     }
     
     MPI_Finalize();

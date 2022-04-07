@@ -10,7 +10,8 @@ double eucledianDistance(int x1, int y1, int x2, int y2);
 
 int main(){
     int rank, size, n, k;
-    int new_data[3];
+    int indexStart = 0;
+    int indexEnd = 0;
 
 
     MPI_Init(NULL, NULL);
@@ -19,75 +20,91 @@ int main(){
 
     if (rank == 0){
         // MAIN PROCESS
-        printf("Enter the number of data points: ");
-        fflush(stdout);
-        scanf("%d", &n);
+        n = 11;
         //send n to all other processes
-        MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        //new data
-        printf("Enter the data to predict: ");
-        fflush(stdout);
-        scanf("%d %d %d", new_data[0], new_data[1], new_data[2]);
-        // send new_data to all other processes
-        MPI_Bcast(new_data, 3, MPI_INT, 0, MPI_COMM_WORLD);
-
-        printf("Enter the number of nearest neighbors: ");
-        fflush(stdout);
-        scanf("%d", &k);
-
+        //read the dataset
         int dataset[n][3];
-        double eucledian_distances[n];
-        MPI_Bcast(dataset, n*3, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(eucledian_distances, n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        // read the dataset
+        
         readDatasetFromFile("dataset.txt", n, dataset);
-        //send dataset to all other processes
-        //send eucledian_distances to all other processes
 
+        //set the euclidean distances
+        double eucledian_distances[n];
 
-        //divide the dataset into chunks
-        n = 21;
+        //set new data
+        int new_data[2] = {48, 142000};
+        int chunk_size = (int)round((float)n/size);
         int aux = 0;
-        float chunk_size = (int)floor((float)n / size);
-        int indexStart = 0;
-        int indexEnd = 0;
-        printf("\nChunk size: %f\n", chunk_size);
-        for (int i = 0; i < size; i++){
-            //getting te start
+        //send dataset to all other processes
+        for (int i = 1; i < size; i++){
             indexStart = aux;
-
-            
-            //getting the end
-            if (i == size - 1){
+            MPI_Send(&n, 1, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(new_data, 2, MPI_INT, i, i, MPI_COMM_WORLD);
+            MPI_Send(dataset, n*3, MPI_INT, i, i, MPI_COMM_WORLD);
+            if (i == size-1){
                 indexEnd = n;
             } else {
-                indexEnd = aux + chunk_size;
+                indexEnd = indexStart + chunk_size;
             }
             aux = indexEnd;
-
-
-            //send start index
+            //send the start and end of the chunk
+            // printf("\nProcess %d: %d %d\n", i, indexStart, indexEnd);
             MPI_Send(&indexStart, 1, MPI_INT, i, i, MPI_COMM_WORLD);
-            //send end index
-            MPI_Send(&indexEnd, 1, MPI_INT, i, i+1, MPI_COMM_WORLD);
+            MPI_Send(&indexEnd, 1, MPI_INT, i, i, MPI_COMM_WORLD);
 
         }
+
+        int size_chunk;
         
+        for (int i = 1; i < size; i++){
+            //get the size of the chunk
+            MPI_Recv(&size_chunk, 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            double chunk[size_chunk];
+            printf("\nProcess %d: %d\n", i, size_chunk);
+            // MPI_Recv(chunk, size_chunk, MPI_DOUBLE, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            // for (int j = 0; j < size_chunk; j++){
+            //     printf("AAAA%f\n", chunk[j]);
+            // }
+            
+        }
+        
+
+        //receive the new data from the process with the euclidean distance closest to the new data
+        // MPI_Bcast(eucledian_distances, n, MPI_INT, 0, MPI_COMM_WORLD);
         
 
     } else {
         // SLAVE PROCESS
-        // receive start index
+        //receive n from main process
+        MPI_Recv(&n, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+        //receive new data from main process
+        int new_data[2];
+        MPI_Recv(new_data, 2, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        //receive dataset from main process
+        int dataset[n][3];
+        MPI_Recv(dataset, n*3, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+
+        //get the start and end of the dataset
         MPI_Recv(&indexStart, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        // receive end index
-        MPI_Recv(&indexEnd, 1, MPI_INT, 0, rank+1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&indexEnd, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        //calculate the eucledian of the dataset chunk with parralelization
-        for (int i = 0; i < n; i++){
-            eucledian_distances[i] = eucledianDistance(new_data[0], new_data[1], dataset[i][0], dataset[i][1]);
+        int size_chunk = indexEnd - indexStart;
+        double distances[size_chunk];
+        printf("from process %d\n", rank);
+        for (int i = indexStart; i < indexEnd; i++){
+            distances[i] = eucledianDistance(dataset[i][0], dataset[i][1], new_data[0], new_data[1]);
+            printf("%f\n", distances[i]);
         }
+        printf("\n");
 
+        //send the size of the chunk to merge
+        MPI_Send(&size_chunk, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
+        //send the distances to merge
+        MPI_Send(distances, size_chunk, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD);
+        
     }
     
     MPI_Finalize();
