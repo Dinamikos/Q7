@@ -5,10 +5,17 @@
 #include <time.h>
 #include <math.h>
 
+/**
+ * Advanced Parallel K-Nearest Neighbors with MPI
+ * next challenge:
+ * - put the label to the right of the distance
+ * - use omp parallel for to parallelize the computation
+ */
+
+
 void readDatasetFromFile(char * path, int n, int dataset[n][3]);
 double eucledianDistance(int x1, int y1, int x2, int y2);
-void Od_even_sort(int size, double a[size][2], int thread_count);
-void makePrediction(int k, double neighbors[k][2]);
+void Od_even_sort(int size, double a[size], int thread_count);
 
 int main(){
     int rank, size, n, k;
@@ -31,7 +38,7 @@ int main(){
         readDatasetFromFile("dataset.txt", n, dataset);
 
         //set the euclidean distances
-        double eucledian_distances[n][2];
+        double eucledian_distances[n];
 
         //set new data
         int new_data[2] = {48, 142000};
@@ -61,13 +68,11 @@ int main(){
         for (int d = 0, i = 1; i < size; i++){
             //get the size of the chunk
             MPI_Recv(&size_chunk, 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            double chunk[size_chunk][2];
+            double chunk[size_chunk];
             // printf("\nProcess %d: %d\n", i, size_chunk);
-            MPI_Recv(chunk, size_chunk*2, MPI_DOUBLE, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(chunk, size_chunk, MPI_DOUBLE, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (int j = 0; j < size_chunk; j++){
-                eucledian_distances[d][0] = chunk[j][0];
-                eucledian_distances[d][1] = chunk[j][1];
-                // printf("\nProcess %d: %f %f\n", i, eucledian_distances[d][0], eucledian_distances[d][1]);
+                eucledian_distances[d] = chunk[j];
                 d++;
                 // printf("%f\n", chunk[j]);
             }
@@ -77,13 +82,9 @@ int main(){
         // order the eucledian distances
         Od_even_sort(n, eucledian_distances, size);
 
-        // print the eucledian distances sorted
-        // for (int i = 0; i < n; i++){
-        //     printf("%f - %f\n",eucledian_distances[i][0] ,eucledian_distances[i][1]);
-        // }
-
-        //make the prediction
-        makePrediction(k, eucledian_distances);
+        for (int i = 0; i < n; i++){
+            printf("%f\n", eucledian_distances[i]);
+        }
 
     } else {
         // SLAVE PROCESS
@@ -104,15 +105,12 @@ int main(){
         MPI_Recv(&indexEnd, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         int size_chunk = indexEnd - indexStart;
-        double distances[size_chunk][2];
+        double distances[size_chunk];
         // printf("from process %d\n", rank);
 
         for (int j=0,i = indexStart; i < indexEnd; i++, j++){
-            //correct label
-            distances[j][0] = dataset[i][2];
-            //eucledian distance for the label
-            distances[j][1] = eucledianDistance(dataset[i][0], dataset[i][1], new_data[0], new_data[1]);
-            // printf("%f - %f\n", distances[j][0], distances[j][1]);
+            // printf("label: %d \n", dataset[i][2]);
+            distances[j] = eucledianDistance(dataset[i][0], dataset[i][1], new_data[0], new_data[1]);
 
         }
         // printf("\n");
@@ -120,7 +118,7 @@ int main(){
         //send the size of the chunk to merge
         MPI_Send(&size_chunk, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
         //send the distances to merge
-        MPI_Send(distances, size_chunk*2, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD);
+        MPI_Send(distances, size_chunk, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD);
         
     }
     
@@ -128,78 +126,32 @@ int main(){
 
     return 0;
 }
-void makePrediction(int k, double neighbors[k][2]){
 
 
-    int fr[k];
-    int visited = -1;
-
-    for(int i = 0; i <k; i++){
-        int count = 1;
-        for(int j = i+1; j < k; j++){
-            if(neighbors[i][0] == neighbors[j][0]){
-                count++;
-                //To avoid counting same element again
-                fr[j] = visited;
-            }
+void Od_even_sort(int size, double a[size], int thread_count){
+  int phase, i, temp; 
+  for(phase = 0; phase < size; phase++){
+    if (phase%2== 0) {
+      //#pragma omp parallel for num_threads(thread_count) default(none) shared(a,size) private (i, temp)
+      for (i=1; i< size; i+= 2){
+        if (a[i-1]> a[i]){
+          temp= a[i];
+          a[i]= a[i-1];
+          a[i-1]= temp;
         }
-        if(fr[i] != visited){
-            fr[i] = count;
-        }
+      }
     }
-
-    // get the element with the max frequency
-    int max_frequency = 0;
-    int max_frequency_index = 0;
-    for (int i = 0; i < k; i++){
-        if(fr[i] != visited){
-            if(fr[i] > max_frequency){
-                max_frequency = fr[i];
-                max_frequency_index = i;
-            }
+    else {
+      //#pragma omp parallel for num_threads(thread_count) default(none) shared(a,size) private(i, temp)
+      for (i=1; i< size-1; i+=2){
+        if (a[i]> a[i+1]){
+          temp= a[i];
+          a[i]= a[i+1];
+          a[i+1]= temp;
         }
+      }
     }
-    printf("\nPrediction: %d\n", (int)neighbors[max_frequency_index][0]);
-}
-
-void Od_even_sort(int size, double a[size][2], int thread_count){
-    int phase, i;
-    double temp,templ; 
-    /**
-     * 
-     * a[size][2]
-     * 
-     * a[size][0] = label
-     * a[size][1] = eucledian distance
-     */
-    for(phase = 0; phase < size; phase++){
-        if (phase%2== 0) {
-            //#pragma omp parallel for num_threads(thread_count) default(none) shared(a,size) private (i, temp)
-            for (i=1; i< size; i+= 2){
-                if (a[i-1][1]> a[i][1]){
-                    temp= a[i][1];
-                    templ= a[i][0];
-                    a[i][1]= a[i-1][1];
-                    a[i][0]= a[i-1][0];
-                    a[i-1][1]= temp;
-                    a[i-1][0]= templ;
-                }
-            }
-        }
-        else {
-            //#pragma omp parallel for num_threads(thread_count) default(none) shared(a,size) private(i, temp)
-            for (i=1; i< size-1; i+=2){
-                if (a[i][1]> a[i+1][1]){
-                    temp= a[i][1];
-                    templ= a[i][0];
-                    a[i][1]= a[i+1][1];
-                    a[i][0]= a[i+1][0];
-                    a[i+1][1]= temp;
-                    a[i+1][0]= templ;
-                }
-            }
-        }
-    }
+  }
 }
 
 double eucledianDistance(int x1, int y1, int x2, int y2){
