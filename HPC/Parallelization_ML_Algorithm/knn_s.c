@@ -8,6 +8,8 @@ void printDataset(int n, int dataset[n][3]);
 void printDatasetWithEuclideanDistance(int n, int dataset[n][3], double dataset_x[n]);
 void getNearestNeighbors(int n, int dataset[n][3], double dataset_x[n], int k, int nearest_neighbors[k]);
 void predict(int new_data[2], int k, int nearest_neighbors[k]);
+void Od_even_sort(int a[],int size, int thread_count);
+void printArray(int array[], int size);
 
 int main(void){
     int n = 11;
@@ -116,6 +118,42 @@ void printDataset(int n, int dataset[n][3]){
 
 double eucledianDistance(int x1, int y1, int x2, int y2){
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
+/////SORTING, AMIGO JUAN PUSE PARA QUE SE GUARDE EN EL MISMO ARRAY PARA QUE NO TENGAMOS QUE ESTAR JUEGANDO CON OTRO
+
+void Od_even_sort(int a[],int size, int thread_count){
+  int phase, i, temp; 
+  for(phase = 0; phase < size; phase++){
+    if (phase%2== 0) {
+      //#pragma omp parallel for num_threads(thread_count) default(none) shared(a,size) private (i, temp)
+      for (i=1; i< size; i+= 2){
+        if (a[i-1]> a[i]){
+          temp= a[i];
+          a[i]= a[i-1];
+          a[i-1]= temp;
+        }
+      }
+    }
+    else {
+      //#pragma omp parallel for num_threads(thread_count) default(none) shared(a,size) private(i, temp)
+      for (i=1; i< size-1; i+=2){
+        if (a[i]> a[i+1]){
+          temp= a[i];
+          a[i]= a[i+1];
+          a[i+1]= temp;
+        }
+      }
+    }
+  }
+}
+
+//PUSE ESTE PRINT PARA QUE COMPRUEBES
+void printArray(int array[], int size) {
+  for (int i = 0; i < size; ++i) {
+    printf("%d  ", array[i]);
+  }
+  printf("\n");
 }
 
 void readDatasetFromFile(char * path, int n, int dataset[n][3]){
