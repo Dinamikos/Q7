@@ -19,7 +19,7 @@ int main(void){
     //
 
 
-    int n = 11;
+    int n = 210;
     int dataset[n][3];
     double dataset_x[n];
     int k = 5;
@@ -29,12 +29,12 @@ int main(void){
     begin_s = clock();
 
 
-    readDatasetFromFile("dataset.txt", n, dataset);
+    readDatasetFromFile("datasetISC.csv", n, dataset);
     //cleaning two last columns in dataset
     for(int i = 0; i < n; i++){
         dataset_x[i] = 0;
     }
-    int new_data[3] = {48, 142000, 0};
+    int new_data[3] = {20,20, 0};
     int nearest_neighbors[k];
     //calculating distances
     for(int i = 0; i < n; i++){

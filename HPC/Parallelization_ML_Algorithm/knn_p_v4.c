@@ -15,27 +15,21 @@ int main(){
     int indexStart = 0;
     int indexEnd = 0;
     int n_threads = 8;
-    //Time
-    double timeSpent_s, timeSpent_p, time_total, speedup;
-    clock_t begin_s, begin_p;
-    clock_t end_s, end_p;
 
     // #pragma omp parallel
-    // int U = omp_get_num_procs();
+    int U = omp_get_num_procs();
 
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     
     if (rank == 0){
-
-        timeSpent_s = 0.0;
-        begin_s = clock();
         // MAIN PROCESS
-        n = 210;
+        printf("number of threads available: %d\n", U);
+        n = 11;
         //read the dataset
         int dataset[n][3];
-        readDatasetFromFile("datasetISC.csv", n, dataset, n_threads);
+        readDatasetFromFile("dataset.txt", n, dataset, n_threads);
 
         //send n and dataset to all other processes
         MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -45,24 +39,30 @@ int main(){
         double eucledian_distances[n][2];
 
         //set new data
-        int new_data[2] = {20, 20};
+        int new_data[2] = {48, 142000};
+        // MPI_Bcast(&new_data, 2, MPI_INT, 0, MPI_COMM_WORLD);
 
         int chunk_size = (int)round((float)n/size);
         int aux = 0;
 
 
-        //send index to all other processes
+        //send dataset to all other processes
         #pragma omp parallel for reduction(+:aux) num_threads(n_threads) private(indexStart, indexEnd)
         {
         for (int i = 1; i < size; i++){
+            // printf("Hello from process %d\n", i);
             indexStart = aux;
+            // MPI_Send(&n, 1, MPI_INT, i, i, MPI_COMM_WORLD);
             MPI_Send(new_data, 2, MPI_INT, i, i, MPI_COMM_WORLD);
-
-            //if it is the last process, send the last index
-            indexEnd = i == size-1 ? n : indexStart + chunk_size;
-
+            // MPI_Send(dataset, n*3, MPI_INT, i, i, MPI_COMM_WORLD);
+            if (i == size-1){
+                indexEnd = n;
+            } else {
+                indexEnd = indexStart + chunk_size;
+            }
             aux = indexEnd;
             //send the start and end of the chunk
+            // printf("\nProcess %d: %d %d\n", i, indexStart, indexEnd);
             MPI_Send(&indexStart, 1, MPI_INT, i, i, MPI_COMM_WORLD);
             MPI_Send(&indexEnd, 1, MPI_INT, i, i, MPI_COMM_WORLD);
 
@@ -76,14 +76,15 @@ int main(){
         for (int d = 0, i = 1; i < size; i++){
             //get the size of the chunk
             MPI_Recv(&size_chunk, 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //receive the chunk
             double chunk[size_chunk][2];
+            // printf("\nProcess %d: %d\n", i, size_chunk);
             MPI_Recv(chunk, size_chunk*2, MPI_DOUBLE, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //save the results in eucledian_distances
             for (int j = 0; j < size_chunk; j++){
                 eucledian_distances[d][0] = chunk[j][0];
                 eucledian_distances[d][1] = chunk[j][1];
+                // printf("\nProcess %d: %f %f\n", i, eucledian_distances[d][0], eucledian_distances[d][1]);
                 d++;
+                // printf("%f\n", chunk[j]);
             }
             
         }
@@ -92,43 +93,52 @@ int main(){
         // order the eucledian distances
         Od_even_sort(n, eucledian_distances, n_threads);
 
+        // print the eucledian distances sorted
+        // for (int i = 0; i < n; i++){
+        //     printf("%f - %f\n",eucledian_distances[i][0] ,eucledian_distances[i][1]);
+        // }
+
         //make the prediction
         makePrediction(k, eucledian_distances, n_threads);
-
-        end_s = clock();
-        timeSpent_s += (double)(end_s - begin_s) / CLOCKS_PER_SEC;
-        printf("\nSequential Time: %f\n", timeSpent_s);
 
     } else {
         // SLAVE PROCESS
         //receive n from main process
+        // MPI_Recv(&n, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
         
         //receive new data from main process
         int new_data[2];
         MPI_Recv(new_data, 2, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // MPI_Bcast(&new_data, 2, MPI_INT, 0, MPI_COMM_WORLD);
+
 
         //receive dataset from main process
         int dataset[n][3];
+        // MPI_Recv(dataset, n*3, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Bcast(&dataset, n*3, MPI_INT, 0, MPI_COMM_WORLD);
         
-        //get the start and end of the chunk
+
+        //get the start and end of the dataset
         MPI_Recv(&indexStart, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Recv(&indexEnd, 1, MPI_INT, 0, rank, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         int size_chunk = indexEnd - indexStart;
         double distances[size_chunk][2];
+        // printf("from process %d\n", rank);
 
-        #pragma omp parallel for num_threads(2) 
+        #pragma omp parallel for num_threads(n_threads) 
         {
         for (int j=0,i = indexStart; i < indexEnd; i++, j++){
             //correct label
             distances[j][0] = dataset[i][2];
             //eucledian distance for the label
             distances[j][1] = eucledianDistance(dataset[i][0], dataset[i][1], new_data[0], new_data[1]);
+            // printf("%f - %f\n", distances[j][0], distances[j][1]);
 
         }
         }
+        // printf("\n");
 
         //send the size of the chunk to merge
         MPI_Send(&size_chunk, 1, MPI_INT, 0, rank, MPI_COMM_WORLD);
@@ -154,6 +164,7 @@ void makePrediction(int k, double neighbors[k][2], int n_threads){
         for(int j = i+1; j < k; j++){
             if(neighbors[i][0] == neighbors[j][0]){
                 count++;
+                //To avoid counting same element again
                 fr[j] = visited;
             }
         }
@@ -180,7 +191,14 @@ void makePrediction(int k, double neighbors[k][2], int n_threads){
 
 void Od_even_sort(int size, double a[size][2], int n_threads){
     int phase, i;
-    double temp,templ;
+    double temp,templ; 
+    /**
+     * 
+     * a[size][2]
+     * 
+     * a[size][0] = label
+     * a[size][1] = eucledian distance
+     */
     for(phase = 0; phase < size; phase++){
         if (phase%2== 0) {
             #pragma omp parallel for num_threads(n_threads) default(none) shared(a,size) private (temp, templ)
@@ -228,10 +246,11 @@ void readDatasetFromFile(char * path, int n, int dataset[n][3], int n_threads){
     }
     
     int i;
+    #pragma omp parallel for num_threads(n_threads)
+    {
     for(i = 0; i < n; i++){
         fscanf(fp, "%d %d %d", &dataset[i][0], &dataset[i][1], &dataset[i][2]);
-        // printf("%d %d %d\n", dataset[i][0], dataset[i][1], dataset[i][2]);
     }
-    
+    }
     fclose(fp);
 }
